@@ -1,0 +1,12 @@
+numpy
+flask
+flask-cors
+flask-socketio
+soundfile
+torch
+torchaudio
+openai-whisper
+pyttsx3
+numpy
+sounddevice
+pysilero-vad

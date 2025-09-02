@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mock Interview</title>
+  <style>
+    body { font-family: sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+    #container { display: flex; gap: 20px; max-width: 1200px; margin: auto; }
+    .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    #video-panel { flex: 2 }
+    video { width: 100%; border-radius: 8px; }
+    .controls { display: flex; gap: 10px; margin-top: 10px; }
+    .controls button { flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    #question-panel { flex: 1; display: flex; flex-direction: column; }
+    #question-list { flex: 1; overflow: auto; list-style: none; padding: 0; margin: 0; }
+    #question-list li { padding: 10px; border-bottom: 1px solid #eee; }
+    #loading { display: none; margin-top: 10px; font-style: italic; color: #555; }
+    /* Feedback panel styling */
+    #feedback-panel { display: none; margin-top: 15px; }
+    #feedback-panel h3 { margin-top: 0; }
+
+    #feedback-content {
+      background: #fafafa;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      font-family: Consolas, monospace;
+      max-height: 300px;
+      overflow-y: auto;
+      color: #333;
+    }
+    #question-lis::-webkit-scrollbar{
+      display: none;
+    }
+    #question-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 500px;
+  list-style: none;
+  padding: 0;
+  scrollbar-width: none;
+  margin: 0;
+}
+
+    #downloadFeedback {
+      display: none;
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: #4caf50;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="video-panel" class="panel">
+      <h2>Interview Session</h2>
+      <video id="preview" autoplay muted></video>
+      <div style="margin-top:10px;">
+        <!-- Voice: <span id="voice-status" style="color:red;">SILENCE</span> -->
+      </div>
+      <div class="controls">
+        <button id="startBtn">Start</button>
+        <button id="stopBtn" disabled>Stop</button>
+        <button id="getFeedbackBtn" disabled style="display:none;">Get Feedback</button>
+        <button id="completeBtn" disabled style="display:none;">Complete</button>
+      </div>
+      <div id="loading">Generating feedback… please wait.</div>
+      <div id="feedback-panel">
+        <h3>Feedback</h3>
+        <div id="feedback-content"></div>
+        <a id="downloadFeedback" download="feedback.txt">Download Feedback</a>
+      </div>
+    </div>
+    <div id="question-panel" class="panel">
+      <h3>Questions</h3>
+      <ul id="question-list"></ul>
+    </div>
+  </div>
+
+  <script>
+    const startBtn      = document.getElementById('startBtn'),
+          stopBtn       = document.getElementById('stopBtn'),
+          getFbBtn      = document.getElementById('getFeedbackBtn'),
+          completeBtn   = document.getElementById('completeBtn'),
+          loading       = document.getElementById('loading'),
+          feedbackPanel = document.getElementById('feedback-panel'),
+          feedbackDiv   = document.getElementById('feedback-content'),
+          downloadLink  = document.getElementById('downloadFeedback'),
+          questionList  = document.getElementById('question-list'),
+          voiceStatus   = document.getElementById('voice-status');
+
+    let mediaRecorder, recorded = [], interviewActive = false, pollInterval = null;
+    const email = localStorage.studentEmail;
+
+    // 1) Setup media recorder
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(stream => {
+        document.getElementById('preview').srcObject = stream;
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => e.data.size && recorded.push(e.data);
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recorded, { type: 'video/webm' });
+          const fd   = new FormData();
+          fd.append('video', blob);
+          fd.append('email', email);
+          fetch('/upload_video', { method: 'POST', body: fd });
+        };
+      });
+
+    // 2) On load, check completed
+    window.onload = () => {
+      if (!email) return location.href = '/';
+      fetch(`/check_interview_status?email=${email}`)
+        .then(r => r.json())
+        .then(d => startBtn.disabled = d.completed);
+    };
+
+    // 3) Start button
+    startBtn.onclick = () => {
+      interviewActive = true;
+      recorded = [];
+
+      startBtn.disabled      = true;
+      stopBtn.disabled       = false;
+      getFbBtn.style.display = 'none';
+      completeBtn.style.display = 'none';
+      feedbackPanel.style.display = 'none';
+      loading.style.display  = 'none';
+      downloadLink.style.display = 'none';
+      feedbackDiv.textContent = '';
+
+      mediaRecorder.start(1000);
+      fetch('/start_interview', { method: 'POST' });
+
+      if (!pollInterval) {
+        pollInterval = setInterval(pollQuestionsAndVAD, 800);
+      }
+    };
+
+    // 4) Polling function
+    function pollQuestionsAndVAD() {
+      if (!interviewActive) return;
+
+      // a) Questions
+      fetch('/get_questions')
+        .then(r => r.json())
+        .then(d => {
+          questionList.innerHTML = '';
+          d.history.forEach(q => {
+            const li = document.createElement('li');
+            li.textContent = q;
+            questionList.appendChild(li);
+          });
+          questionList.lastChild?.scrollIntoView({ behavior: 'smooth' });
+
+          // Auto-stop once done
+          if (d.current === "Interview Finished") {
+            interviewActive = false;
+            clearInterval(pollInterval);
+            pollInterval = null;
+            mediaRecorder.stop();
+            stopBtn.disabled = true;
+            getFbBtn.style.display = 'inline-block';
+            getFbBtn.disabled = false;
+            alert("All questions have been asked. Interview stopped.");
+          }
+        });
+
+      // b) Simple VAD
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(s => {
+          const ctx = new AudioContext();
+          const src = ctx.createMediaStreamSource(s);
+          const an  = ctx.createAnalyser(); an.fftSize = 512;
+          src.connect(an);
+          const data = new Uint8Array(an.fftSize);
+          an.getByteTimeDomainData(data);
+          const rms = Math.sqrt(data.reduce((a,v)=>a+(v-128)**2,0)/data.length);
+          const speaking = rms > 10;
+          voiceStatus.textContent = speaking? 'SPEAKING' : 'SILENCE';
+          voiceStatus.style.color     = speaking? 'green' : 'red';
+          ctx.close(); s.getTracks().forEach(t=>t.stop());
+        })
+        .catch(_ => {
+          voiceStatus.textContent = 'SILENCE';
+          voiceStatus.style.color  = 'red';
+        });
+    }
+
+    stopBtn.onclick = () => {
+      if (!interviewActive) return;
+      interviewActive = false;
+      stopBtn.disabled = true;
+      mediaRecorder.stop();
+      clearInterval(pollInterval);
+      pollInterval = null;
+
+      getFbBtn.style.display = 'inline-block';
+      getFbBtn.disabled = false;
+
+      fetch('/stop_interview', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email })
+      });
+    };
+
+    getFbBtn.onclick = async () => {
+      getFbBtn.disabled = true;
+      loading.style.display = 'block';
+      feedbackPanel.style.display = 'block';
+      feedbackDiv.textContent = '';
+      downloadLink.style.display = 'none';
+
+      const resp = await fetch(`/get_feedback?email=${email}`);
+      const data = await resp.json();
+
+      loading.style.display = 'none';
+      feedbackDiv.textContent = data.feedback;
+      downloadLink.href = URL.createObjectURL(new Blob([data.feedback],{ type:'text/plain' }));
+      downloadLink.style.display = 'inline-block';
+
+      completeBtn.style.display = 'inline-block';
+      completeBtn.disabled = false;
+    };
+
+    completeBtn.onclick = () => {
+      completeBtn.disabled = true;
+      fetch('/update_status', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email })
+      })
+      .then(_=> {
+        alert('Interview marked complete!');
+        window.location.href = '/';
+      });
+    };
+  </script>
+</body>
+</html>

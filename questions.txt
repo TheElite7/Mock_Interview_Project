@@ -1,0 +1,125 @@
+Tell me about yourself ?
+
+What are the different modes in the V I editor, and how do you switch between them?
+
+What is the difference between COLON W Q, COLON X, and Z Z in V I?
+
+How can you delete a line, a word, or a character in V I?
+
+How do you search and replace a word in a file using V I?
+
+What is the difference between a hard link and a soft link?
+
+How do you create a symbolic link using the L N command?
+
+Can you create a hard link for a directory? Why or why not?
+
+What are the different types of permissions in Linux, such as read, write, and execute?
+
+How do you change permissions using CHMOD, both in symbolic and numeric modes?
+
+Explain how the U MASK value affects default permissions on new files.
+
+How can you view file permissions using L S SPACE HYPHEN L?
+
+What is the difference between S U I D, S G I D, and the Sticky Bit?
+
+How do you set or remove S U I D, S G I D, and the Sticky Bit?
+
+Where is the Sticky Bit commonly used, and why?
+
+How do you create a new user with a specific U I D, G I D, and shell?
+
+What are the different fields in the ETC PASSWD and ETC SHADOW files?
+
+How do you lock or unlock a user account in Linux?
+
+What is the difference between a primary group and a secondary group?
+
+How do you list all running processes using P S or other commands?
+
+What is the difference between KILL and KILL SPACE HYPHEN 9?
+
+How do you find and kill a process by its name?
+
+What is a zombie process in Linux?
+
+What is the difference between TAR, GZIP, and BZIP2 for compression?
+
+How do you compress or decompress a directory using TAR and GZIP?
+
+How do you view the contents of a TAR file without extracting it?
+
+How do you install, remove, or upgrade a package using R P M?
+
+Which command verifies installed R P M packages?
+
+What does R P M SPACE HYPHEN Q A show?
+
+How do you install packages using YUM?
+
+How do you create a local YUM repository?
+
+What is the purpose of the CREATE REPO command?
+
+How do you clean or rebuild the YUM cache?
+
+How do you start, stop, enable, or disable a service using SYSTEMCTL?
+
+What is the difference between a service and a daemon in Linux?
+
+How can you check if a service is enabled at boot?
+
+How do you assign a static IP address in R H E L?
+
+What are the key network configuration files in Linux?
+
+How do you troubleshoot DNS issues on a Linux system?
+
+How do you apply A C L on a file or directory?
+
+What is the use of GETFACL and SETFACL?
+
+What does SETFACL SPACE HYPHEN B do?
+
+How do you configure S S H for remote login?
+
+Where is the S S H configuration file located?
+
+How do you disable root login over S S H?
+
+What is the difference between M B R and G P T partitioning schemes?
+
+How do you partition a disk using F DISK or PARTED?
+
+What is the purpose of the M K F S and MOUNT commands?
+
+What is the syntax of a CRONTAB entry?
+
+How do you list, edit, or remove CRONTAB jobs?
+
+What is the difference between ETC CRONTAB and a user crontab?
+
+How do you create and enable a swap partition or swap file?
+
+How do you check swap usage on a system?
+
+What is the role of the swappiness parameter?
+
+How is the FIND command different from LOCATE?
+
+How do you use FIND with name, size, or modified date filters?
+
+What is the use of the UPDATEDB command?
+
+Where are logs stored in Linux?
+
+What is VAR LOG MESSAGES used for?
+
+How do you monitor logs in real-time using TAIL SPACE HYPHEN F?
+
+How do you assign limited SUDO permissions to a user?
+
+What is the difference between NOPASSWD and full access in the SUDOERS file?
+
+Where are sudo command logs stored?

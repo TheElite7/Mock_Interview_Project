@@ -1,0 +1,72 @@
+SETUP & RUN INSTRUCTIONS
+
+Follow these steps to install and run the application.
+
+
+
+ STEP 1: Install Python Requirements
+
+Make sure Python 3 is installed on your system.  
+Then open a terminal and run:
+
+    pip3 install -r requirements.txt
+
+---
+
+STEP 2: Install Mimic 3 (TTS Engine)
+
+You can install Mimic 3 using either pip or Git:
+
+Option A: Install via pip (Recommended)**
+
+    pip3 install mycroft-mimic3-tts
+
+Option B: Install via Git**
+
+    git clone https://github.com/MycroftAI/mimic3.git
+    cd mimic3
+    pip3 install .
+
+---
+
+STEP 3: Start the Mimic 3 Server
+
+Keep this server running in a separate terminal window.
+
+- On Windows**:
+
+      mimic3-server.exe
+
+- On Mac/Linux**:
+
+      mimic3-server
+
+---
+
+STEP 4: Run the Flask Web App
+
+In a new terminal window (same folder as app.py), run:
+
+    python3 app.py
+
+---
+
+STEP 5: Open in Browser
+
+After the server starts, you will see a link like:
+
+    http://127.0.0.1:5000/
+
+Click the link or copy it into your browser to access the app.
+
+---
+
+ TROUBLESHOOTING NOTES:
+
+- Make sure `mimic3-server` is added to your PATH if it's not recognized.
+- On Windows, restart the terminal after installing mimic3.
+- Keep both `mimic3-server` and `app.py` running during usage.
+
+---
+
+ You're now ready to use the application!

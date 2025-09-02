@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Interview Form</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    
+    .main {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      width: 100%;
+      max-width: 500px;
+    }
+    
+    h2 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+    
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background-color: #2980b9;
+    }
+    
+    .error {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: -10px;
+      margin-bottom: 10px;
+      display: none;
+    }
+    
+    @media (max-width: 600px) {
+      .main {
+        margin: 20px;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="main">
+    <h2>Enter Student Details</h2>
+    <form id="studentForm">
+      <input type="text" id="name" placeholder="Name" required>
+      <div id="nameError" class="error">Please enter your name</div>
+      
+      <input type="email" id="email" placeholder="Email" required>
+      <div id="emailError" class="error">Please enter a valid email</div>
+      
+      <input type="tel" id="phoneNumber" placeholder="Phone Number (10 digits)" required pattern="[0-9]{10}">
+      <div id="phoneError" class="error">Please enter a 10-digit phone number</div>
+
+      <select id="batch" required>
+        <option value="">Select Batch</option>
+        <option value="2024">2024</option>
+        <option value="2025">2025</option>
+        <option value="2026">2026</option>
+      </select>
+      <div id="batchError" class="error">Please select a batch</div>
+
+      <select id="domain" required>
+        <option value="">Select Domain</option>
+        <option value="Linux">Linux</option>
+        <option value="Python">Python</option>
+        <option value="DevOps">DevOps</option>
+        <option value="Java">Java</option>
+      </select>
+      <div id="domainError" class="error">Please select a domain</div>
+
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <script>
+    function validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
+    }
+
+    function validatePhoneNumber(phone) {
+      const re = /^\d{10}$/;
+      return re.test(phone);
+    }
+
+    function showError(elementId, message) {
+      const errorElement = document.getElementById(elementId);
+      errorElement.textContent = message;
+      errorElement.style.display = 'block';
+    }
+
+    function hideError(elementId) {
+      document.getElementById(elementId).style.display = 'none';
+    }
+    function submitStudent(event) {
+  event.preventDefault();
+  
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phoneNumber = document.getElementById("phoneNumber").value.trim();
+  const batch = document.getElementById("batch").value;
+  const domain = document.getElementById("domain").value;
+  
+  // Reset errors
+  hideError('nameError');
+  hideError('emailError');
+  hideError('phoneError');
+  hideError('batchError');
+  hideError('domainError');
+  
+  let isValid = true;
+  
+  if (!name) {
+    showError('nameError', 'Please enter your name');
+    isValid = false;
+  }
+  
+  if (!email) {
+    showError('emailError', 'Please enter your email');
+    isValid = false;
+  } else if (!validateEmail(email)) {
+    showError('emailError', 'Please enter a valid email');
+    isValid = false;
+  }
+  
+  if (!phoneNumber) {
+    showError('phoneError', 'Please enter your phone number');
+    isValid = false;
+  } else if (!validatePhoneNumber(phoneNumber)) {
+    showError('phoneError', 'Phone number must be 10 digits');
+    isValid = false;
+  }
+  
+  if (!batch) {
+    showError('batchError', 'Please select a batch');
+    isValid = false;
+  }
+  
+  if (!domain) {
+    showError('domainError', 'Please select a domain');
+    isValid = false;
+  }
+  
+  if (!isValid) return;
+  
+  const data = {
+    uname: name,
+    email: email,
+    phoneNumber: phoneNumber,
+    batch: batch,
+    domain: domain
+  };
+
+  fetch('/add_student', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(response => {
+    if (!response.ok) {
+      return response.json().then(err => { throw new Error(err.message || 'Network response was not ok') });
+    }
+    return response.json();
+  })
+  .then(result => {
+    if (result.status === "success") {
+      localStorage.setItem('studentEmail', email);
+      localStorage.setItem('studentName', name);
+      localStorage.setItem('studentDomain', domain);
+      
+      // Use the redirect URL from the backend response
+      if (result.redirect) {
+        window.location.href = result.redirect;
+      } else {
+        window.location.href = "/interview?email=" + encodeURIComponent(email);
+      }
+    } else {
+      alert(result.message || "Something went wrong. Please try again.");
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert(error.message || "Failed to submit student details. Please check your connection and try again.");
+  });
+}
+
+    document.getElementById('studentForm').addEventListener('submit', submitStudent);
+  </script>
+</body>
+</html>

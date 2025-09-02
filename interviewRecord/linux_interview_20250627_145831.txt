@@ -1,0 +1,6 @@
+
+Interviewer: Explain what happens when you type 'LS' in Linux.
+Candidate:  This is written the list of files and directly in the current working directory.
+Interviewer: How do you check memory usage on a Linux server?
+Candidate:  using the Htop command to check the memory usage in a Linux server.
+Candidate:  Thank you.
