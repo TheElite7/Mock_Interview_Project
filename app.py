@@ -68,8 +68,7 @@ def load_feedback(file):
         feedback  =  f.read()
 
     return feedback
-
-custom_questions = load_questions('/home/saaho/Desktop/Mock Interview/Final2/Final/questions.txt')
+custom_questions = load_questions('/app/questions.txt')
 # feedback_prompt =  load_feedback('/home/saaho/Desktop/Mock Interview/Final2/Mock_Interview_V2/feedbackprompt.txt')
 # print(feedback_prompt)
 interviewer_instance = Interviewer(job_role='Software Engineer', custom_questions=custom_questions , )
@@ -266,4 +265,4 @@ def update_status():
     return jsonify(status="success")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=False)
