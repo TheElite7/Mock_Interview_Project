@@ -1,0 +1,24 @@
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# System dependencies required by Mimic3/audio
+RUN apt-get update && apt-get install -y \
+    libsndfile1 \
+    libasound2 \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Mimic3 requires the older setuptools/pkg_resources behavior
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir "setuptools<81"
+
+# Install Mimic3
+RUN pip install --no-cache-dir mycroft-mimic3-tts
+
+EXPOSE 59125
+
+CMD ["mimic3-server", "--host", "0.0.0.0", "--port", "59125"]
